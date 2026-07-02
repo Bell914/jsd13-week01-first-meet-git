@@ -3,193 +3,596 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTML Tags Demo</title>
+  <title>Flavorscape · Restaurant Menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8f6f1;
+      color: #2c2c2c;
+      line-height: 1.6;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #fff;
+      text-align: center;
+      padding: 4rem 1.5rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(255,107,53,.08), transparent 60%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 span { color: #ff6b35; }
+    .hero p {
+      margin-top: .75rem;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: rgba(255,255,255,.7);
+      max-width: 32rem;
+      margin-inline: auto;
+    }
+
+    /* ── Cart Toggle ── */
+    .cart-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 1000;
+      background: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: .6rem 1.25rem;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .cart-toggle:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,0,0,.16); }
+    .cart-toggle .count {
+      background: #ff6b35;
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+    }
+
+    /* ── Cart Sidebar ── */
+    .cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      z-index: 1999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+    .cart-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .cart-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      max-width: 420px;
+      height: 100vh;
+      background: #fff;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .35s cubic-bezier(.22,1,.36,1);
+      box-shadow: -8px 0 40px rgba(0,0,0,.08);
+    }
+    .cart-sidebar.open { transform: translateX(0); }
+
+    .cart-sidebar .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 1.5rem 1rem;
+      border-bottom: 1px solid #f0ede8;
+    }
+    .cart-sidebar .cart-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .cart-sidebar .cart-header h2 span { color: #ff6b35; }
+    .cart-sidebar .cart-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #999;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: background .2s;
+    }
+    .cart-sidebar .cart-close:hover { background: #f5f3ef; }
+
+    .cart-sidebar .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.5rem;
+    }
+    .cart-sidebar .cart-empty {
+      text-align: center;
+      color: #bbb;
+      margin-top: 3rem;
+      font-size: .95rem;
+    }
+
+    /* ── Cart Item ── */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .85rem 0;
+      border-bottom: 1px solid #f5f3ef;
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item .ci-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #eae7e0;
+    }
+    .cart-item .ci-info { flex: 1; min-width: 0; }
+    .cart-item .ci-info .ci-name {
+      font-weight: 600;
+      font-size: .9rem;
+      margin-bottom: 2px;
+    }
+    .cart-item .ci-info .ci-price {
+      font-size: .82rem;
+      color: #2a9d8f;
+      font-weight: 600;
+    }
+    .cart-item .ci-qty {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .cart-item .ci-qty button {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #e0dcd5;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s, border-color .2s;
+    }
+    .cart-item .ci-qty button:hover { background: #f5f3ef; border-color: #ccc; }
+    .cart-item .ci-qty .qty-val {
+      font-size: .9rem;
+      font-weight: 600;
+      min-width: 20px;
+      text-align: center;
+    }
+    .cart-item .ci-total {
+      font-weight: 700;
+      font-size: .95rem;
+      color: #2c2c2c;
+      min-width: 56px;
+      text-align: right;
+    }
+
+    /* ── Cart Footer ── */
+    .cart-footer {
+      border-top: 1px solid #f0ede8;
+      padding: 1.25rem 1.5rem 1.5rem;
+    }
+    .cart-footer .cart-subtotal {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .cart-footer .cart-subtotal .total-val {
+      color: #2a9d8f;
+      font-weight: 700;
+    }
+    .btn-checkout {
+      width: 100%;
+      padding: .85rem;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ff6b35, #e85d2c);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-checkout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(255,107,53,.35);
+    }
+    .btn-checkout:active { transform: translateY(0); }
+
+    /* ── Container & Grid ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: .5rem;
+    }
+    .section-sub {
+      color: #777;
+      margin-bottom: 2.5rem;
+      font-size: .95rem;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    /* ── Card ── */
+    .food-card {
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,.06);
+      transition: transform .3s ease, box-shadow .3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .food-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 48px rgba(0,0,0,.1);
+    }
+
+    .food-card .img-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: #eae7e0;
+    }
+    .food-card .img-wrap img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      transition: transform .4s ease;
+    }
+    .food-card:hover .img-wrap img { transform: scale(1.08); }
+    .food-card .badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: .03em;
+    }
+    .badge.veg { background: rgba(46,204,113,.85); }
+
+    .food-card .body {
+      padding: 1.25rem 1.5rem 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .food-card .body .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .35rem;
+    }
+    .food-card .body .title-row h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .food-card .body .price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2a9d8f;
+      letter-spacing: -.02em;
+    }
+    .food-card .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: .75rem;
+    }
+    .food-card .meta span {
+      font-size: .78rem;
+      background: #f0ede8;
+      padding: 2px 12px;
+      border-radius: 12px;
+      color: #555;
+    }
+    .food-card .meta .origin {
+      background: #ff6b35;
+      color: #fff;
+    }
+    .food-card .desc {
+      font-size: .88rem;
+      color: #777;
+      line-height: 1.55;
+      margin-top: auto;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Add to Cart Button ── */
+    .btn-add {
+      width: 100%;
+      padding: .7rem;
+      border: 2px solid #2a9d8f;
+      border-radius: 12px;
+      background: transparent;
+      color: #2a9d8f;
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .25s, color .25s, transform .2s;
+      letter-spacing: .02em;
+    }
+    .btn-add:hover {
+      background: #2a9d8f;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+    .btn-add:active { transform: translateY(0); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: #aaa;
+      font-size: .85rem;
+      border-top: 1px solid #e8e4dc;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hero { padding: 2.5rem 1rem 2rem; }
+      .container { padding: 2rem 1rem 3rem; }
+      .menu-grid { gap: 1.25rem; }
+      .cart-toggle { top: .75rem; right: .75rem; padding: .5rem 1rem; font-size: .85rem; }
+      .cart-sidebar { max-width: 100%; }
+    }
+  </style>
 </head>
 <body>
 
-  <header>
-    <h1>HTML Tags Demo Page</h1>
-    <nav>
-      <ul>
-        <li><a href="#text">Text</a></li>
-        <li><a href="#lists">Lists</a></li>
-        <li><a href="#media">Links &amp; Images</a></li>
-        <li><a href="#table">Table</a></li>
-        <li><a href="#form">Form</a></li>
-      </ul>
-    </nav>
+  <header class="hero">
+    <h1>Flavor<span>scape</span></h1>
+    <p>A curated journey through the world's most beloved dishes</p>
   </header>
 
-  <main>
-
-    <section id="text">
-      <h2>Text Elements</h2>
-
-      <h1>Heading Level 1</h1>
-      <h2>Heading Level 2</h2>
-      <h3>Heading Level 3</h3>
-      <h4>Heading Level 4</h4>
-      <h5>Heading Level 5</h5>
-      <h6>Heading Level 6</h6>
-
-      <p>This is a standard paragraph with <strong>strong importance</strong>, <em>emphasized text</em>, and <small>small text</small>. You can also use <code>inline code</code> for technical terms.</p>
-
-      <p>Line break example:<br>Text after a line break.</p>
-
-      <hr>
-
-      <blockquote>
-        <p>This is a blockquote. It is used to quote content from another source.</p>
-      </blockquote>
-
-      <pre>
-function greet(name) {
-  console.log("Hello, " + name);
-}
-      </pre>
-    </section>
-
-    <section id="lists">
-      <h2>Lists</h2>
-
-      <article>
-        <h3>Ordered List</h3>
-        <ol>
-          <li>First item</li>
-          <li>Second item</li>
-          <li>Third item</li>
-        </ol>
-      </article>
-
-      <article>
-        <h3>Unordered List</h3>
-        <ul>
-          <li>Apple</li>
-          <li>Banana</li>
-          <li>Cherry</li>
-        </ul>
-      </article>
-
-      <article>
-        <h3>Description List</h3>
-        <dl>
-          <dt>HTML</dt>
-          <dd>HyperText Markup Language</dd>
-          <dt>CSS</dt>
-          <dd>Cascading Style Sheets</dd>
-        </dl>
-      </article>
-    </section>
-
-    <section id="media">
-      <h2>Links &amp; Images</h2>
-
-      <p>Visit <a href="https://developer.mozilla.org">MDN Web Docs</a> for more HTML references.</p>
-
-      <figure>
-        <img src="https://placehold.co/400x200" alt="A placeholder image showing a gray rectangle">
-        <figcaption>A placeholder image used for demonstration.</figcaption>
-      </figure>
-    </section>
-
-    <section id="table">
-      <h2>Table</h2>
-
-      <table>
-        <caption>Weekly Schedule</caption>
-        <thead>
-          <tr>
-            <th>Day</th>
-            <th>Topic</th>
-            <th>Duration</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Monday</td>
-            <td>HTML Basics</td>
-            <td>2 hours</td>
-          </tr>
-          <tr>
-            <td>Wednesday</td>
-            <td>CSS Fundamentals</td>
-            <td>2 hours</td>
-          </tr>
-          <tr>
-            <td>Friday</td>
-            <td>JavaScript Intro</td>
-            <td>2 hours</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section id="form">
-      <h2>Form</h2>
-
-      <form>
-        <fieldset>
-          <legend>Contact Information</legend>
-
-          <p>
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name">
-          </p>
-
-          <p>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email">
-          </p>
-
-          <p>
-            <label for="topic">Topic:</label>
-            <select id="topic" name="topic">
-              <option value="html">HTML</option>
-              <option value="css">CSS</option>
-              <option value="js">JavaScript</option>
-            </select>
-          </p>
-
-          <p>
-            <label for="message">Message:</label><br>
-            <textarea id="message" name="message" rows="4" cols="40"></textarea>
-          </p>
-
-          <p>
-            <button type="submit">Send</button>
-          </p>
-        </fieldset>
-      </form>
-    </section>
-
-    <section id="media-elements">
-      <h2>Media</h2>
-
-      <figure>
-        <figcaption>Sample audio player:</figcaption>
-        <audio controls src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
-          Your browser does not support the audio element.
-        </audio>
-      </figure>
-
-      <figure>
-        <figcaption>Sample video player:</figcaption>
-        <video controls width="400" src="https://www.w3schools.com/html/mov_bbb.mp4">
-          Your browser does not support the video element.
-        </video>
-      </figure>
-    </section>
-
-    <aside>
-      <h2>Did You Know?</h2>
-      <p>HTML stands for HyperText Markup Language. It was first created by Tim Berners-Lee in 1991.</p>
-    </aside>
-
+  <main class="container">
+    <h2 class="section-title">Our Collection</h2>
+    <p class="section-sub">Handpicked flavors from around the globe</p>
+    <div class="menu-grid" id="menuGrid"></div>
   </main>
 
   <footer>
-    <p><small>&copy; 2026 HTML Tags Demo. Built for learning purposes.</small></p>
+    <p>Flavorscape &middot; Built with love for food lovers</p>
   </footer>
+
+  <button class="cart-toggle" id="cartToggle">
+    <span>Cart</span>
+    <span class="count" id="cartCount">0</span>
+  </button>
+
+  <div class="cart-overlay" id="cartOverlay"></div>
+
+  <aside class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2>Your <span>Cart</span></h2>
+      <button class="cart-close" id="cartClose">&times;</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <p class="cart-empty">Your cart is empty.</p>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-subtotal">
+        <span>Total</span>
+        <span class="total-val" id="cartTotal">$0.00</span>
+      </div>
+      <button class="btn-checkout" id="checkoutBtn">Checkout</button>
+    </div>
+  </aside>
+
+  <script src="my-array.js"></script>
+  <script src="my-object.js"></script>
+  <script>
+    (function() {
+      const grid = document.getElementById('menuGrid');
+      const cartSidebar = document.getElementById('cartSidebar');
+      const cartOverlay = document.getElementById('cartOverlay');
+      const cartToggle = document.getElementById('cartToggle');
+      const cartClose = document.getElementById('cartClose');
+      const cartItems = document.getElementById('cartItems');
+      const cartFooter = document.getElementById('cartFooter');
+      const cartTotal = document.getElementById('cartTotal');
+      const cartCount = document.getElementById('cartCount');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+
+      let cart = [];
+
+      const descriptionMap = {
+        Pizza: 'Classic oven-baked dough topped with rich tomato sauce, mozzarella, and your favorite toppings.',
+        Malatang: 'A fiery Sichuan-style spicy broth packed with fresh vegetables, meats, and fragrant spices.',
+        'Pad Thai': 'Stir-fried rice noodles tossed with shrimp, peanuts, bean sprouts, and tamarind sauce.',
+        Burger: 'Juicy beef patty with cheddar, lettuce, tomato, and secret sauce in a toasted brioche bun.',
+        Sushi: 'Delicately seasoned vinegared rice paired with fresh fish, seaweed, and wasabi.',
+        Medovik: 'A luscious Russian honey cake with layers of tender sponge and creamy sour-cream frosting.'
+      };
+
+      /* ── Render Menu ── */
+      foodDatabase.forEach(item => {
+        const name = item.name;
+        const desc = descriptionMap[name] || 'A delightful dish from around the world.';
+        const isVeg = item.vegetarian;
+
+        const card = document.createElement('div');
+        card.className = 'food-card';
+
+        card.innerHTML = `
+          <div class="img-wrap">
+            <img src="${item.image}" alt="${name}" loading="lazy">
+            <span class="badge ${isVeg ? 'veg' : ''}">${isVeg ? 'Vegetarian' : 'Non-Veg'}</span>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <h3>${name}</h3>
+              <span class="price">$${item.price.toFixed(2)}</span>
+            </div>
+            <div class="meta">
+              <span class="origin">${item.origin}</span>
+              <span>${item.cuisine}</span>
+            </div>
+            <p class="desc">${desc}</p>
+            <button class="btn-add" data-id="${item.id}">Add to Cart</button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      /* ── Cart Functions ── */
+      function addToCart(id) {
+        const existing = cart.find(c => c.id === id);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          const item = foodDatabase.find(f => f.id === id);
+          cart.push({ ...item, qty: 1 });
+        }
+        renderCart();
+      }
+
+      function updateQty(id, delta) {
+        const entry = cart.find(c => c.id === id);
+        if (!entry) return;
+        entry.qty += delta;
+        if (entry.qty <= 0) {
+          cart = cart.filter(c => c.id !== id);
+        }
+        renderCart();
+      }
+
+      function renderCart() {
+        const totalItems = cart.reduce((sum, c) => sum + c.qty, 0);
+        cartCount.textContent = totalItems;
+
+        if (cart.length === 0) {
+          cartItems.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
+          cartFooter.style.display = 'none';
+          return;
+        }
+
+        cartFooter.style.display = 'block';
+        let html = '';
+        let total = 0;
+
+        cart.forEach(entry => {
+          const subtotal = entry.price * entry.qty;
+          total += subtotal;
+          html += `
+            <div class="cart-item">
+              <img class="ci-img" src="${entry.image}" alt="${entry.name}" loading="lazy">
+              <div class="ci-info">
+                <div class="ci-name">${entry.name}</div>
+                <div class="ci-price">$${entry.price.toFixed(2)} each</div>
+              </div>
+              <div class="ci-qty">
+                <button data-id="${entry.id}" data-delta="-1">&minus;</button>
+                <span class="qty-val">${entry.qty}</span>
+                <button data-id="${entry.id}" data-delta="1">+</button>
+              </div>
+              <div class="ci-total">$${subtotal.toFixed(2)}</div>
+            </div>
+          `;
+        });
+
+        cartItems.innerHTML = html;
+        cartTotal.textContent = `$${total.toFixed(2)}`;
+
+        cartItems.querySelectorAll('.ci-qty button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            updateQty(+btn.dataset.id, +btn.dataset.delta);
+          });
+        });
+      }
+
+      /* ── Event Listeners ── */
+      grid.addEventListener('click', e => {
+        const btn = e.target.closest('.btn-add');
+        if (btn) addToCart(+btn.dataset.id);
+      });
+
+      function openCart() {
+        cartSidebar.classList.add('open');
+        cartOverlay.classList.add('open');
+      }
+
+      function closeCart() {
+        cartSidebar.classList.remove('open');
+        cartOverlay.classList.remove('open');
+      }
+
+      cartToggle.addEventListener('click', openCart);
+      cartClose.addEventListener('click', closeCart);
+      cartOverlay.addEventListener('click', closeCart);
+
+      checkoutBtn.addEventListener('click', () => {
+        const total = cart.reduce((sum, c) => sum + c.price * c.qty, 0);
+        alert(`Total: $${total.toFixed(2)}\nThank you for your order!`);
+      });
+
+      renderCart();
+    })();
+  </script>
 
 </body>
 </html>
